@@ -10,7 +10,7 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Java / Maven (为队友的后端提前准备好)
+# Java / Maven (为后端提前准备好)
 target/
 *.class
 *.log
