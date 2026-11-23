@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- 品牌主色 -->
+    <color name="primary_green">#2E7D32</color>
+    <color name="primary_green_dark">#1B5E20</color>
+    <color name="primary_green_light">#E8F5E9</color>
+
+    <!-- 科技辅助色 -->
+    <color name="tech_blue">#1565C0</color>
+    <color name="tech_blue_light">#E3F2FD</color>
+
+    <!-- 页面颜色 -->
+    <color name="page_bg">#F5F8F5</color>
+    <color name="card_white">#FFFFFF</color>
+
+    <!-- 文字颜色 -->
+    <color name="text_primary">#263238</color>
+    <color name="text_secondary">#78909C</color>
+
+    <!-- 边框颜色 -->
+    <color name="border_color">#E0E8E0</color>
 </resources>
