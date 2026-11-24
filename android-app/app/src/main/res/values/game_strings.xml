@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 游戏模块文案，单独放一份，避免改动公共 strings.xml 造成合并冲突 -->
+
+    <string name="game_title">垃圾分类闯关</string>
+    <string name="game_subtitle">GARBAGE SORTING CHALLENGE</string>
+    <string name="game_logo_symbol">♻</string>
+    <string name="game_back">返回</string>
+
+    <!-- 顶部数据面板 -->
+    <string name="game_score_label">当前分数</string>
+    <string name="game_correct_label">答对</string>
+    <string name="game_wrong_label">答错</string>
+    <string name="game_progress_label">进度</string>
+    <string name="game_progress_value">%1$d / %2$d</string>
+
+    <!-- 四个垃圾桶 -->
+    <string name="bin_recyclable">可回收物</string>
+    <string name="bin_kitchen">厨余垃圾</string>
+    <string name="bin_hazardous">有害垃圾</string>
+    <string name="bin_other">其他垃圾</string>
+
+    <!-- 底部卡片区 -->
+    <string name="game_cards_title">待分类垃圾</string>
+    <string name="game_cards_hint">长按卡片拖到垃圾桶</string>
+    <string name="game_card_image">垃圾图片</string>
+
+    <!-- 反馈文案 -->
+    <string name="game_feedback_default">拖动下方卡片，投进正确的垃圾桶</string>
+    <string name="game_feedback_outside">请把卡片拖进垃圾桶里再松手</string>
+    <string name="game_feedback_correct">✅ 分对了！%1$s 属于%2$s，+%3$d 分</string>
+    <string name="game_feedback_wrong">❌ 分错了，%1$s 属于%2$s，-%3$d 分</string>
+
+    <!-- 结算 -->
+    <string name="game_result_title">本局结束</string>
+    <string name="game_result_message">最终得分：%1$d 分\n答对：%2$d 题　答错：%3$d 题\n正确率：%4$d%%</string>
+    <string name="game_play_again">再来一局</string>
+    <string name="game_exit">退出</string>
+</resources>

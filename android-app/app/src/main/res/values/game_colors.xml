@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 游戏模块颜色，全部对齐《颜色规范》色卡。
+         统一使用 game_ 前缀，避免与公共 colors.xml 里的定义重复；
+         后续主框架统一整理时可整体替换成 @color/primary_green 等公共色。 -->
+
+    <!-- 生态绿：主色 -->
+    <color name="game_primary_green">#2E7D32</color>
+    <!-- 科技蓝：辅色 -->
+    <color name="game_tech_blue">#1565C0</color>
+    <!-- 页面背景：浅灰绿 -->
+    <color name="game_page_bg">#F5F8F5</color>
+    <!-- 卡片背景：白 -->
+    <color name="game_card_white">#FFFFFF</color>
+    <!-- 浅绿区域：淡生态绿 -->
+    <color name="game_light_green">#EAF4EC</color>
+    <!-- 主标题：深墨绿 -->
+    <color name="game_text_title">#26352B</color>
+    <!-- 正文：深灰绿 -->
+    <color name="game_text_body">#52645A</color>
+    <!-- 辅助文字：灰绿色 -->
+    <color name="game_text_hint">#82948A</color>
+    <!-- 边框 / 分隔线，与主框架 border_color 保持一致 -->
+    <color name="game_border">#E0E8E0</color>
+
+    <!-- 错误反馈专用色（色卡未定义警示色，仅用于答错提示，不参与整体配色） -->
+    <color name="game_warn">#C62828</color>
+</resources>

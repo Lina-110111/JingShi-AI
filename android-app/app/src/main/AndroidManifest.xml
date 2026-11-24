@@ -21,6 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 游戏模块：垃圾分类拖拽闯关页（游戏模块独立入口，不改动主框架代码） -->
+        <activity
+            android:name=".game.GameActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.JingShiAI.Game" />
     </application>
 
 </manifest>

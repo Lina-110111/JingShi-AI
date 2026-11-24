@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 游戏页专用主题：只给 GameActivity 用，不改动公共 themes.xml。
+         固定浅色，避免跟随系统深色模式变黑；状态栏用生态绿。 -->
+    <style name="Theme.JingShiAI.Game" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/game_primary_green</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@color/game_page_bg</item>
+    </style>
+</resources>
