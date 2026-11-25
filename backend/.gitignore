@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+
+# IDE
+.idea/
+
+# Model temporary files
+*.pt
+*.pth
+*.onnx
+
+# Temporary uploads
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
+
+# Environment variables
+.env
