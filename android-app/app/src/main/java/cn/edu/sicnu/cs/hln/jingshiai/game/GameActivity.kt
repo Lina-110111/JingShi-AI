@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.DragEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -17,10 +18,11 @@ import cn.edu.sicnu.cs.hln.jingshiai.databinding.ActivityGameBinding
  * 垃圾分类拖拽主页面。
  *
  * 交互流程：
- * 1. 底部横向列表展示垃圾卡片，长按卡片启动系统拖拽（startDragAndDrop）；
- * 2. 上方四个垃圾桶通过 OnDragListener 接收拖拽事件，松手时判定分类；
- * 3. 分类正确 +10 分，分类错误 -5 分（最低 0 分），并给出文字反馈与桶动画；
- * 4. 卡片作答后从列表移除，全部答完弹出结算对话框。
+ * 1. 顶部可切换简单 / 中等 / 困难三档模式，切换后立即按该模式重新抽题开局；
+ * 2. 底部横向列表展示垃圾卡片，长按卡片启动系统拖拽（startDragAndDrop）；
+ * 3. 上方四个垃圾桶通过 OnDragListener 接收拖拽事件，松手时判定分类；
+ * 4. 分类正确 +10 分，分类错误 -5 分（最低 0 分），并给出文字反馈与桶动画；
+ * 5. 卡片作答后从列表移除，全部答完弹出结算对话框。
  *
  * 判分与数据都在本地完成，后续接后端时只需替换 GarbageRepository 的数据来源。
  */
@@ -38,6 +40,9 @@ class GameActivity : AppCompatActivity() {
     private var wrongCount = 0
     private var totalCount = 0
 
+    /** 当前难度模式，默认中等 */
+    private var mode: GarbageMode = GarbageMode.NORMAL
+
     /** 当前拖拽中的卡片与它在列表中的位置 */
     private var draggingItem: GarbageItem? = null
     private var draggingIndex = -1
@@ -50,6 +55,9 @@ class GameActivity : AppCompatActivity() {
 
     /** 每个桶的原始背景，用于拖拽高亮结束后恢复 */
     private val originBinBackground = mutableMapOf<View, Int>()
+
+    /** 模式按钮 → 对应模式 */
+    private lateinit var modeChips: List<Pair<TextView, GarbageMode>>
 
     /** 反馈文字自动隐藏任务 */
     private val hideFeedbackRunnable = Runnable {
@@ -67,25 +75,76 @@ class GameActivity : AppCompatActivity() {
 
         binding.ivBack.setOnClickListener { finish() }
 
+        setupModeChips()
         setupRecyclerView()
         setupBins()
-        updateScoreUi()
+        startRound(mode)
+    }
 
-        showFeedback(getString(R.string.game_feedback_default), null)
+    /** 三档难度按钮：点击切换模式并重新开局 */
+    private fun setupModeChips() {
+        modeChips = listOf(
+            binding.chipEasy to GarbageMode.EASY,
+            binding.chipNormal to GarbageMode.NORMAL,
+            binding.chipHard to GarbageMode.HARD
+        )
+
+        modeChips.forEach { (chip, chipMode) ->
+            chip.setOnClickListener {
+                if (mode != chipMode) {
+                    mode = chipMode
+                    startRound(chipMode)
+                }
+            }
+        }
     }
 
     /** 初始化底部横向卡片列表 */
     private fun setupRecyclerView() {
-        val garbageList = GarbageRepository.loadLocalGarbageList()
-        totalCount = garbageList.size
-
-        adapter = GameAdapter(garbageList) { view, item, position ->
+        adapter = GameAdapter(emptyList()) { view, item, position ->
             startDrag(view, item, position)
         }
 
         binding.rvGarbage.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.rvGarbage.adapter = adapter
+    }
+
+    /** 开始新一局：重置计分、按模式抽题、打乱顺序、刷新界面 */
+    private fun startRound(target: GarbageMode) {
+        resetDragState()
+
+        score = 0
+        correctCount = 0
+        wrongCount = 0
+
+        // 抽题时已在 GarbageRepository 里做过分类均衡 + 整体打乱
+        val roundItems = GarbageRepository.buildRound(target)
+        totalCount = roundItems.size
+        adapter.submit(roundItems)
+
+        updateScoreUi()
+        updateModeChips()
+        showFeedback(getString(R.string.game_feedback_default), null)
+
+        binding.rvGarbage.scrollToPosition(0)
+    }
+
+    /** 刷新三档按钮的选中外观 */
+    private fun updateModeChips() {
+        modeChips.forEach { (chip, chipMode) ->
+            val selected = chipMode == mode
+            chip.setBackgroundResource(
+                if (selected) R.drawable.game_bg_chip_selected else R.drawable.game_bg_chip_normal
+            )
+            chip.setTextColor(
+                ContextCompat.getColor(
+                    this,
+                    if (selected) R.color.game_card_white else R.color.game_primary_green
+                )
+            )
+            chip.alpha = if (selected) 1f else 0.85f
+        }
     }
 
     /** 初始化四个垃圾桶的拖拽监听 */
@@ -288,7 +347,7 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    /** 全部答完弹出结算对话框 */
+    /** 全部答完弹出结算对话框，再来一局保持当前模式 */
     private fun showResultDialog() {
         if (isFinishing || isDestroyed) return
 
@@ -296,7 +355,7 @@ class GameActivity : AppCompatActivity() {
         val accuracy = if (answered == 0) 0 else correctCount * 100 / answered
 
         AlertDialog.Builder(this)
-            .setTitle(R.string.game_result_title)
+            .setTitle(getString(R.string.game_result_title_with_mode, mode.label))
             .setMessage(
                 getString(
                     R.string.game_result_message,
@@ -307,7 +366,7 @@ class GameActivity : AppCompatActivity() {
                 )
             )
             .setCancelable(false)
-            .setPositiveButton(R.string.game_play_again) { _, _ -> recreate() }
+            .setPositiveButton(R.string.game_play_again) { _, _ -> startRound(mode) }
             .setNegativeButton(R.string.game_exit) { _, _ -> finish() }
             .show()
     }

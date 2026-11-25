@@ -7,6 +7,11 @@
     <string name="game_logo_symbol">♻</string>
     <string name="game_back">返回</string>
 
+    <!-- 难度模式 -->
+    <string name="game_mode_easy">简单 8题</string>
+    <string name="game_mode_normal">中等 12题</string>
+    <string name="game_mode_hard">困难 16题</string>
+
     <!-- 顶部数据面板 -->
     <string name="game_score_label">当前分数</string>
     <string name="game_correct_label">答对</string>
@@ -23,7 +28,7 @@
     <!-- 底部卡片区 -->
     <string name="game_cards_title">待分类垃圾</string>
     <string name="game_cards_hint">长按卡片拖到垃圾桶</string>
-    <string name="game_card_image">垃圾图片</string>
+    <string name="game_card_image">垃圾图标</string>
 
     <!-- 反馈文案 -->
     <string name="game_feedback_default">拖动下方卡片，投进正确的垃圾桶</string>
@@ -33,6 +38,7 @@
 
     <!-- 结算 -->
     <string name="game_result_title">本局结束</string>
+    <string name="game_result_title_with_mode">%1$s模式 · 本局结束</string>
     <string name="game_result_message">最终得分：%1$d 分\n答对：%2$d 题　答错：%3$d 题\n正确率：%4$d%%</string>
     <string name="game_play_again">再来一局</string>
     <string name="game_exit">退出</string>

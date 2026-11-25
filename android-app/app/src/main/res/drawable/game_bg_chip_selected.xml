@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 难度按钮选中态：生态绿实心 + 全圆角 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/game_primary_green" />
+    <corners android:radius="19dp" />
+</shape>

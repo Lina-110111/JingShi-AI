@@ -6,11 +6,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import cn.edu.sicnu.cs.hln.jingshiai.databinding.ItemGarbageCardBinding
 
+/**
+ * 底部待分类卡片列表的适配器。
+ *
+ * 卡片显示 emoji 图标 + 名称，长按回调外层启动拖拽。
+ */
 class GameAdapter(
     items: List<GarbageItem>,
     private val onLongPressCard: (View, GarbageItem, Int) -> Unit
 ) : RecyclerView.Adapter<GameAdapter.GarbageViewHolder>() {
-
 
     private val data: MutableList<GarbageItem> = items.toMutableList()
 
@@ -30,12 +34,7 @@ class GameAdapter(
         val item = data[position]
 
         holder.binding.tvGarbageName.text = item.name
-
-        if (item.drawableRes != 0) {
-            holder.binding.ivGarbage.setImageResource(item.drawableRes)
-        } else {
-            holder.binding.ivGarbage.setImageDrawable(null)
-        }
+        holder.binding.tvGarbageIcon.text = item.emoji
 
         holder.binding.root.setOnLongClickListener { view ->
             val currentPosition = holder.bindingAdapterPosition
@@ -48,12 +47,18 @@ class GameAdapter(
 
     override fun getItemCount(): Int = data.size
 
+    /** 换一个模式 / 再来一局时整体替换列表 */
+    fun submit(newItems: List<GarbageItem>) {
+        data.clear()
+        data.addAll(newItems)
+        notifyDataSetChanged()
+    }
+
+    fun remainingCount(): Int = data.size
 
     fun removeAt(position: Int) {
         if (position < 0 || position >= data.size) return
         data.removeAt(position)
         notifyItemRemoved(position)
     }
-
-    fun remainingCount(): Int = data.size
 }
