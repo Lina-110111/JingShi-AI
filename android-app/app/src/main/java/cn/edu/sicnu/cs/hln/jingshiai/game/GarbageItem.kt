@@ -26,23 +26,30 @@ object GarbageType {
 }
 
 /**
- * 三档难度模式。
+ * 三档难度模式，按"简单 → 中等 → 困难"的顺序闯关解锁。
  *
  * @param perType   每类抽几题（四类各取这么多，总数 = perType × 4）
  * @param maxLevel  可抽到的最高难度等级：1 简单、2 中等、3 困难
+ * @param maxWrong  本关允许答错的次数，超过即整局失败
+ *
+ * 枚举声明顺序就是闯关顺序，[ordinal] 直接当作关卡序号用。
  */
 enum class GarbageMode(
     val label: String,
     val desc: String,
     val perType: Int,
-    val maxLevel: Int
+    val maxLevel: Int,
+    val maxWrong: Int
 ) {
-    EASY("简单", "8 题", perType = 2, maxLevel = 1),
-    NORMAL("中等", "12 题", perType = 3, maxLevel = 2),
-    HARD("困难", "16 题", perType = 4, maxLevel = 3);
+    EASY("简单", "8 题", perType = 2, maxLevel = 1, maxWrong = 2),
+    NORMAL("中等", "12 题", perType = 3, maxLevel = 2, maxWrong = 2),
+    HARD("困难", "16 题", perType = 4, maxLevel = 3, maxWrong = 3);
 
     /** 一局总题数 */
     val totalCount: Int get() = perType * 4
+
+    /** 下一关，已经是最后一关时返回 null */
+    fun next(): GarbageMode? = values().getOrNull(ordinal + 1)
 }
 
 /**

@@ -25,4 +25,9 @@
 
     <!-- 错误反馈专用色（色卡未定义警示色，仅用于答错提示，不参与整体配色） -->
     <color name="game_warn">#C62828</color>
+
+    <!-- 未解锁关卡按钮：去掉饱和度的灰绿，视觉上明显"不可点" -->
+    <color name="game_locked_bg">#EFF1EF</color>
+    <color name="game_locked_border">#DCE3DC</color>
+    <color name="game_locked_text">#9DA9A1</color>
 </resources>

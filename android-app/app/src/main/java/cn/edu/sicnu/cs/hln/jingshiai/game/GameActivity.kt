@@ -7,6 +7,7 @@ import android.view.DragEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -15,16 +16,16 @@ import cn.edu.sicnu.cs.hln.jingshiai.R
 import cn.edu.sicnu.cs.hln.jingshiai.databinding.ActivityGameBinding
 
 /**
- * 垃圾分类拖拽主页面。
+ * 垃圾分类闯关主页面。
+ *
+ * 闯关规则：
+ * 1. 三档难度按 简单 → 中等 → 困难 顺序解锁，必须先通过前一关才能进入下一关；
+ * 2. 简单 / 中等最多允许答错 2 次，困难最多 3 次，超过即本关失败、整局结束；
+ * 3. 答完全部题目且错误次数未超限，视为通过本关，解锁下一难度。
  *
  * 交互流程：
- * 1. 顶部可切换简单 / 中等 / 困难三档模式，切换后立即按该模式重新抽题开局；
- * 2. 底部横向列表展示垃圾卡片，长按卡片启动系统拖拽（startDragAndDrop）；
- * 3. 上方四个垃圾桶通过 OnDragListener 接收拖拽事件，松手时判定分类；
- * 4. 分类正确 +10 分，分类错误 -5 分（最低 0 分），并给出文字反馈与桶动画；
- * 5. 卡片作答后从列表移除，全部答完弹出结算对话框。
- *
- * 判分与数据都在本地完成，后续接后端时只需替换 GarbageRepository 的数据来源。
+ * 长按底部卡片启动系统拖拽（startDragAndDrop），松手落在垃圾桶上判定分类；
+ * 分类正确 +10 分，错误 -5 分（最低 0 分）并消耗一次错误额度。
  */
 class GameActivity : AppCompatActivity() {
 
@@ -40,8 +41,14 @@ class GameActivity : AppCompatActivity() {
     private var wrongCount = 0
     private var totalCount = 0
 
-    /** 当前难度模式，默认中等 */
-    private var mode: GarbageMode = GarbageMode.NORMAL
+    /** 已解锁的最高关卡序号：0 只有简单、1 到中等、2 全解锁（仅本次进入有效） */
+    private var unlockedLevel = 0
+
+    /** 当前关卡，进入时固定从简单开始 */
+    private var mode: GarbageMode = GarbageMode.EASY
+
+    /** 本关是否已结束（通关或失败），结束后不再响应拖拽 */
+    private var roundFinished = false
 
     /** 当前拖拽中的卡片与它在列表中的位置 */
     private var draggingItem: GarbageItem? = null
@@ -75,13 +82,17 @@ class GameActivity : AppCompatActivity() {
 
         binding.ivBack.setOnClickListener { finish() }
 
+        // 每次进入游戏都只有简单关可玩，通关后在同一次游戏内解锁下一关
+        unlockedLevel = 0
+        mode = GarbageMode.EASY
+
         setupModeChips()
         setupRecyclerView()
         setupBins()
         startRound(mode)
     }
 
-    /** 三档难度按钮：点击切换模式并重新开局 */
+    /** 三档难度按钮：只能点已解锁的关卡 */
     private fun setupModeChips() {
         modeChips = listOf(
             binding.chipEasy to GarbageMode.EASY,
@@ -91,9 +102,24 @@ class GameActivity : AppCompatActivity() {
 
         modeChips.forEach { (chip, chipMode) ->
             chip.setOnClickListener {
-                if (mode != chipMode) {
-                    mode = chipMode
-                    startRound(chipMode)
+                when {
+                    !isUnlocked(chipMode) -> {
+                        val previous = GarbageMode.values().getOrNull(chipMode.ordinal - 1)
+                        val tip = getString(
+                            R.string.game_feedback_locked,
+                            previous?.label ?: GarbageMode.EASY.label,
+                            chipMode.label
+                        )
+                        showFeedback(tip, false)
+                        Toast.makeText(this, tip, Toast.LENGTH_SHORT).show()
+                    }
+
+                    chipMode == mode -> Unit
+
+                    else -> {
+                        mode = chipMode
+                        startRound(chipMode)
+                    }
                 }
             }
         }
@@ -110,13 +136,14 @@ class GameActivity : AppCompatActivity() {
         binding.rvGarbage.adapter = adapter
     }
 
-    /** 开始新一局：重置计分、按模式抽题、打乱顺序、刷新界面 */
+    /** 开始新一关：重置计分、按模式抽题、打乱顺序、刷新界面 */
     private fun startRound(target: GarbageMode) {
         resetDragState()
 
         score = 0
         correctCount = 0
         wrongCount = 0
+        roundFinished = false
 
         // 抽题时已在 GarbageRepository 里做过分类均衡 + 整体打乱
         val roundItems = GarbageRepository.buildRound(target)
@@ -125,25 +152,53 @@ class GameActivity : AppCompatActivity() {
 
         updateScoreUi()
         updateModeChips()
-        showFeedback(getString(R.string.game_feedback_default), null)
+        showFeedback(
+            getString(R.string.game_feedback_round_start, target.label, totalCount, target.maxWrong),
+            null
+        )
 
         binding.rvGarbage.scrollToPosition(0)
     }
 
-    /** 刷新三档按钮的选中外观 */
+    /** 是否已解锁某一关 */
+    private fun isUnlocked(target: GarbageMode): Boolean = target.ordinal <= unlockedLevel
+
+    /** 通关后解锁下一关（只在本次游戏内有效，退出重进仍从简单开始） */
+    private fun unlockNext(target: GarbageMode) {
+        val next = target.next() ?: return
+        if (next.ordinal <= unlockedLevel) return
+
+        unlockedLevel = next.ordinal
+    }
+
+    /** 刷新三档按钮：选中 / 可点 / 锁定三种外观 */
     private fun updateModeChips() {
         modeChips.forEach { (chip, chipMode) ->
-            val selected = chipMode == mode
+            val unlocked = isUnlocked(chipMode)
+            val selected = unlocked && chipMode == mode
+
             chip.setBackgroundResource(
-                if (selected) R.drawable.game_bg_chip_selected else R.drawable.game_bg_chip_normal
+                when {
+                    selected -> R.drawable.game_bg_chip_selected
+                    unlocked -> R.drawable.game_bg_chip_normal
+                    else -> R.drawable.game_bg_chip_locked
+                }
             )
             chip.setTextColor(
                 ContextCompat.getColor(
                     this,
-                    if (selected) R.color.game_card_white else R.color.game_primary_green
+                    when {
+                        selected -> R.color.game_card_white
+                        unlocked -> R.color.game_primary_green
+                        else -> R.color.game_locked_text
+                    }
                 )
             )
-            chip.alpha = if (selected) 1f else 0.85f
+            chip.text = if (unlocked) {
+                "${chipMode.label} ${chipMode.desc}"
+            } else {
+                getString(R.string.game_mode_locked_format, chipMode.label)
+            }
         }
     }
 
@@ -168,7 +223,7 @@ class GameActivity : AppCompatActivity() {
 
     /** 长按卡片，启动系统原生拖拽 */
     private fun startDrag(view: View, item: GarbageItem, position: Int) {
-        if (isJudging) return
+        if (isJudging || roundFinished) return
 
         draggingItem = item
         draggingIndex = position
@@ -224,12 +279,14 @@ class GameActivity : AppCompatActivity() {
         bin.setBackgroundResource(resId)
     }
 
-    /** 判定分类、计分、播放反馈动画、移除卡片 */
+    /** 判定分类、计分、消耗错误额度、移除卡片，并判断是否通关或失败 */
     private fun judge(item: GarbageItem, binType: Int, bin: View) {
-        if (isJudging) return
+        if (isJudging || roundFinished) return
         isJudging = true
 
-        if (item.type == binType) {
+        val correct = item.type == binType
+
+        if (correct) {
             score += scorePerCorrect
             correctCount++
             playBinBounce(bin)
@@ -259,13 +316,25 @@ class GameActivity : AppCompatActivity() {
 
         updateScoreUi()
 
+        // 错误次数超过本关额度：整局直接失败，卡片留在原位
+        if (!correct && wrongCount > mode.maxWrong) {
+            roundFinished = true
+            binding.tvFeedback.removeCallbacks(hideFeedbackRunnable)
+            binding.tvFeedback.visibility = View.VISIBLE
+            binding.tvFeedback.alpha = 1f
+            showFeedback(getString(R.string.game_feedback_fail, wrongCount, mode.maxWrong), false)
+            binding.rvGarbage.postDelayed({ showFailDialog() }, 500)
+            return
+        }
+
         // 作答完成后移除该卡片，post 避免在 RecyclerView 布局计算中直接改动数据
         val index = draggingIndex
         if (index >= 0) {
             binding.rvGarbage.post {
                 adapter.removeAt(index)
                 if (adapter.remainingCount() == 0) {
-                    binding.rvGarbage.postDelayed({ showResultDialog() }, 300)
+                    roundFinished = true
+                    binding.rvGarbage.postDelayed({ onRoundCleared() }, 400)
                 }
             }
         }
@@ -283,11 +352,17 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    /** 更新顶部分数、正确数、错误数、进度 */
+    /** 更新顶部分数、正确数、错误次数（含本关额度）与进度 */
     private fun updateScoreUi() {
         binding.tvScore.text = score.toString()
         binding.tvCorrect.text = correctCount.toString()
-        binding.tvWrong.text = wrongCount.toString()
+        binding.tvWrong.text = getString(R.string.game_wrong_value, wrongCount, mode.maxWrong)
+        binding.tvWrong.setTextColor(
+            ContextCompat.getColor(
+                this,
+                if (wrongCount > mode.maxWrong) R.color.game_warn else R.color.game_text_body
+            )
+        )
         binding.tvProgress.text =
             getString(R.string.game_progress_value, correctCount + wrongCount, totalCount)
     }
@@ -347,26 +422,70 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    /** 全部答完弹出结算对话框，再来一局保持当前模式 */
-    private fun showResultDialog() {
+    /** 题目全部答完且未超错额：解锁下一关或提示全部通关 */
+    private fun onRoundCleared() {
         if (isFinishing || isDestroyed) return
 
-        val answered = correctCount + wrongCount
-        val accuracy = if (answered == 0) 0 else correctCount * 100 / answered
+        val next = mode.next()
+        if (next == null) {
+            showAllPassedDialog()
+        } else {
+            unlockNext(mode)
+            updateModeChips()
+            showPassDialog(next)
+        }
+    }
 
+    /** 通关弹窗：直接进入下一关 */
+    private fun showPassDialog(next: GarbageMode) {
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.game_result_title_with_mode, mode.label))
+            .setTitle(getString(R.string.game_pass_title, mode.label))
             .setMessage(
                 getString(
-                    R.string.game_result_message,
+                    R.string.game_pass_message,
                     score,
                     correctCount,
                     wrongCount,
-                    accuracy
+                    next.label,
+                    next.totalCount
+                )
+            )
+            .setCancelable(false)
+            .setPositiveButton(getString(R.string.game_next_mode, next.label)) { _, _ ->
+                mode = next
+                startRound(next)
+            }
+            .setNegativeButton(R.string.game_exit) { _, _ -> finish() }
+            .show()
+    }
+
+    /** 三关全部通过 */
+    private fun showAllPassedDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.game_all_pass_title)
+            .setMessage(
+                getString(
+                    R.string.game_all_pass_message,
+                    score,
+                    correctCount,
+                    wrongCount
                 )
             )
             .setCancelable(false)
             .setPositiveButton(R.string.game_play_again) { _, _ -> startRound(mode) }
+            .setNegativeButton(R.string.game_exit) { _, _ -> finish() }
+            .show()
+    }
+
+    /** 错误次数超限：挑战失败 */
+    private fun showFailDialog() {
+        if (isFinishing || isDestroyed) return
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.game_fail_title)
+            .setMessage(getString(R.string.game_fail_message, mode.label, mode.maxWrong, wrongCount))
+            .setCancelable(false)
+            .setPositiveButton(R.string.game_retry) { _, _ -> startRound(mode) }
             .setNegativeButton(R.string.game_exit) { _, _ -> finish() }
             .show()
     }

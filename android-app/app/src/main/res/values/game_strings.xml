@@ -11,11 +11,14 @@
     <string name="game_mode_easy">简单 8题</string>
     <string name="game_mode_normal">中等 12题</string>
     <string name="game_mode_hard">困难 16题</string>
+    <!-- 未解锁关卡在按钮上显示的前缀 -->
+    <string name="game_mode_locked_format">🔒 %1$s</string>
 
     <!-- 顶部数据面板 -->
     <string name="game_score_label">当前分数</string>
     <string name="game_correct_label">答对</string>
-    <string name="game_wrong_label">答错</string>
+    <string name="game_wrong_label">错误次数</string>
+    <string name="game_wrong_value">%1$d/%2$d</string>
     <string name="game_progress_label">进度</string>
     <string name="game_progress_value">%1$d / %2$d</string>
 
@@ -32,9 +35,12 @@
 
     <!-- 反馈文案 -->
     <string name="game_feedback_default">拖动下方卡片，投进正确的垃圾桶</string>
+    <string name="game_feedback_round_start">%1$s模式：共 %2$d 题，最多可答错 %3$d 次</string>
     <string name="game_feedback_outside">请把卡片拖进垃圾桶里再松手</string>
     <string name="game_feedback_correct">✅ 分对了！%1$s 属于%2$s，+%3$d 分</string>
     <string name="game_feedback_wrong">❌ 分错了，%1$s 属于%2$s，-%3$d 分</string>
+    <string name="game_feedback_locked">🔒 先通过%1$s模式，才能挑战%2$s模式</string>
+    <string name="game_feedback_fail">❌ 已错 %1$d 次，超过本关 %2$d 次上限</string>
 
     <!-- 结算 -->
     <string name="game_result_title">本局结束</string>
@@ -42,4 +48,16 @@
     <string name="game_result_message">最终得分：%1$d 分\n答对：%2$d 题　答错：%3$d 题\n正确率：%4$d%%</string>
     <string name="game_play_again">再来一局</string>
     <string name="game_exit">退出</string>
+
+    <!-- 通关 -->
+    <string name="game_pass_title">🎉 通过%1$s模式</string>
+    <string name="game_pass_message">得分 %1$d 分　答对 %2$d 题　答错 %3$d 题\n已解锁「%4$s」模式，共 %5$d 题</string>
+    <string name="game_next_mode">进入%1$s</string>
+    <string name="game_all_pass_title">🎉 全部通关！</string>
+    <string name="game_all_pass_message">三档难度全部通过\n本关得分 %1$d 分，答对 %2$d 题，答错 %3$d 题</string>
+
+    <!-- 失败 -->
+    <string name="game_fail_title">❌ 挑战失败</string>
+    <string name="game_fail_message">%1$s模式最多答错 %2$d 次\n本局已答错 %3$d 次，挑战结束</string>
+    <string name="game_retry">再试一次</string>
 </resources>
