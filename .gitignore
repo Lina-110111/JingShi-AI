@@ -1,0 +1,30 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+
+# Android Studio
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Java / Maven (为后端提前准备好)
+target/
+*.class
+*.log
+
+# Local secrets (非常重要，不要泄露密钥)
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.properties
+secrets.properties
+*.jks
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
