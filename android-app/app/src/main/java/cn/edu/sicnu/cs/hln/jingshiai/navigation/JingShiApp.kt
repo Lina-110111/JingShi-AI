@@ -23,11 +23,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import cn.edu.sicnu.cs.hln.jingshiai.R
 import cn.edu.sicnu.cs.hln.jingshiai.RecognitionActivity
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.HomeScreen
-import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.HomeViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.KnowledgeScreen
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.MineScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.PlaceholderScreen
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecordsScreen
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.StatsViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.CardWhite
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.GreenLight
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.GreenPrimary
@@ -66,7 +69,7 @@ fun JingShiApp() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.HOME) {
-                val viewModel: HomeViewModel = viewModel()
+                val viewModel: StatsViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 HomeScreen(
                     uiState = uiState,
@@ -90,13 +93,34 @@ fun JingShiApp() {
                 )
             }
             composable(Routes.MINE) {
-                PlaceholderScreen(
-                    title = "我的",
-                    description = "个人中心页面将在下一步实现。"
+                val viewModel: StatsViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                MineScreen(
+                    stats = uiState,
+                    onOpenRecognitionHistory = { navController.navigate(Routes.RECOGNITION_HISTORY) },
+                    onOpenGameHistory = { navController.navigate(Routes.GAME_HISTORY) }
                 )
             }
             composable(Routes.KNOWLEDGE) {
                 KnowledgeScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.RECOGNITION_HISTORY) {
+                RecordsScreen(
+                    title = "识别历史",
+                    iconRes = R.drawable.ic_nav_scan,
+                    emptyTitle = "暂无识别记录",
+                    emptyHint = "完成一次 AI 识别后，识别结果会显示在这里。",
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.GAME_HISTORY) {
+                RecordsScreen(
+                    title = "游戏记录",
+                    iconRes = R.drawable.ic_nav_game,
+                    emptyTitle = "暂无游戏记录",
+                    emptyHint = "完成一局垃圾分类游戏后，成绩会显示在这里。",
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

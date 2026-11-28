@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.sp
 import cn.edu.sicnu.cs.hln.jingshiai.R
 import cn.edu.sicnu.cs.hln.jingshiai.data.local.KnowledgeData
 import cn.edu.sicnu.cs.hln.jingshiai.data.local.KnowledgeItem
+import cn.edu.sicnu.cs.hln.jingshiai.ui.components.SectionTitle
+import cn.edu.sicnu.cs.hln.jingshiai.ui.components.StatsRow
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.CardWhite
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.GreenLight
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.GreenPrimary
@@ -50,7 +52,7 @@ import java.util.Calendar
 
 @Composable
 fun HomeScreen(
-    uiState: HomeUiState,
+    uiState: StatsUiState,
     onStartRecognition: () -> Unit,
     onOpenGame: () -> Unit,
     onOpenKnowledge: () -> Unit,
@@ -306,88 +308,5 @@ private fun TodayKnowledgeCard(item: KnowledgeItem, onClick: () -> Unit) {
             style = MaterialTheme.typography.bodyMedium,
             color = TextSecondary
         )
-    }
-}
-
-// 环保数据统计
-@Composable
-private fun StatsRow(recognitionCount: Int, gameCount: Int) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        StatCard(
-            title = "累计识别次数",
-            count = recognitionCount,
-            modifier = Modifier.weight(1f)
-        )
-        StatCard(
-            title = "游戏完成次数",
-            count = gameCount,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-@Composable
-private fun StatCard(title: String, count: Int, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(CardWhite)
-            .padding(16.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
-        )
-        Spacer(Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = count.toString(),
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = GreenPrimary
-            )
-            Text(
-                text = "次",
-                style = MaterialTheme.typography.labelSmall,
-                color = TextHint,
-                modifier = Modifier.padding(start = 3.dp, bottom = 3.dp)
-            )
-        }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            // 数据库暂无记录时使用明确的空状态
-            text = if (count == 0) "暂无记录" else "持续累积中",
-            style = MaterialTheme.typography.labelSmall,
-            color = TextHint
-        )
-    }
-}
-
-// 区块标题，可选右侧操作文字
-@Composable
-private fun SectionTitle(
-    title: String,
-    actionText: String? = null,
-    onAction: (() -> Unit)? = null
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = TextPrimary,
-            modifier = Modifier.weight(1f)
-        )
-        if (actionText != null && onAction != null) {
-            Text(
-                text = actionText,
-                style = MaterialTheme.typography.labelSmall,
-                color = GreenPrimary,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .clickable(onClick = onAction)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-        }
     }
 }

@@ -10,6 +10,8 @@ object Routes {
     const val GAME = "game"
     const val MINE = "mine"
     const val KNOWLEDGE = "knowledge"
+    const val RECOGNITION_HISTORY = "recognition_history"
+    const val GAME_HISTORY = "game_history"
 }
 
 // 底部导航的四个入口
