@@ -3,4 +3,6 @@ plugins {
     alias(libs.plugins.android.application) apply false
     // Compose 编译器插件：AGP 9 使用内置 Kotlin，版本需与内置 Kotlin 2.2.10 保持一致
     alias(libs.plugins.compose.compiler) apply false
+    // KSP：用于 Room 注解处理
+    alias(libs.plugins.ksp) apply false
 }

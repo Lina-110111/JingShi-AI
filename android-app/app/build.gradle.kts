@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -57,6 +58,10 @@ dependencies {
 
     // Navigation Compose：底部导航与页面切换
     implementation(libs.androidx.navigation.compose)
+
+    // Room：本地数据持久化，room-compiler 通过 KSP 生成实现
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 
     // 仅 Debug 包含 Compose 预览工具
     debugImplementation(libs.androidx.compose.ui.tooling)

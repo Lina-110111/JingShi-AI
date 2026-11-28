@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import cn.edu.sicnu.cs.hln.jingshiai.R
 import cn.edu.sicnu.cs.hln.jingshiai.data.local.KnowledgeData
 import cn.edu.sicnu.cs.hln.jingshiai.data.local.KnowledgeItem
+import cn.edu.sicnu.cs.hln.jingshiai.data.model.Stats
 import cn.edu.sicnu.cs.hln.jingshiai.ui.components.SectionTitle
 import cn.edu.sicnu.cs.hln.jingshiai.ui.components.StatsRow
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.CardWhite
@@ -52,7 +53,7 @@ import java.util.Calendar
 
 @Composable
 fun HomeScreen(
-    uiState: StatsUiState,
+    stats: Stats,
     onStartRecognition: () -> Unit,
     onOpenGame: () -> Unit,
     onOpenKnowledge: () -> Unit,
@@ -101,8 +102,8 @@ fun HomeScreen(
         SectionTitle("环保数据")
         Spacer(Modifier.height(12.dp))
         StatsRow(
-            recognitionCount = uiState.recognitionCount,
-            gameCount = uiState.gameCount
+            recognitionCount = stats.recognitionCount,
+            gameCount = stats.gameCount
         )
     }
 }

@@ -25,10 +25,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import cn.edu.sicnu.cs.hln.jingshiai.R
 import cn.edu.sicnu.cs.hln.jingshiai.RecognitionActivity
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.GameHistoryViewModel
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.GameRecordCard
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.HomeScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.KnowledgeScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.MineScreen
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.MineViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.PlaceholderScreen
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecognitionHistoryViewModel
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecognitionRecordCard
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecordsScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.StatsViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.CardWhite
@@ -70,9 +75,9 @@ fun JingShiApp() {
         ) {
             composable(Routes.HOME) {
                 val viewModel: StatsViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val stats by viewModel.stats.collectAsStateWithLifecycle()
                 HomeScreen(
-                    uiState = uiState,
+                    stats = stats,
                     onStartRecognition = openRecognitionPage,
                     onOpenGame = { navController.navigateToTab(BottomTab.Game) },
                     onOpenKnowledge = { navController.navigate(Routes.KNOWLEDGE) }
@@ -93,10 +98,12 @@ fun JingShiApp() {
                 )
             }
             composable(Routes.MINE) {
-                val viewModel: StatsViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val viewModel: MineViewModel = viewModel()
+                val stats by viewModel.stats.collectAsStateWithLifecycle()
+                val user by viewModel.user.collectAsStateWithLifecycle()
                 MineScreen(
-                    stats = uiState,
+                    stats = stats,
+                    user = user,
                     onOpenRecognitionHistory = { navController.navigate(Routes.RECOGNITION_HISTORY) },
                     onOpenGameHistory = { navController.navigate(Routes.GAME_HISTORY) }
                 )
@@ -105,22 +112,32 @@ fun JingShiApp() {
                 KnowledgeScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.RECOGNITION_HISTORY) {
+                val viewModel: RecognitionHistoryViewModel = viewModel()
+                val records by viewModel.records.collectAsStateWithLifecycle()
                 RecordsScreen(
                     title = "识别历史",
                     iconRes = R.drawable.ic_nav_scan,
                     emptyTitle = "暂无识别记录",
                     emptyHint = "完成一次 AI 识别后，识别结果会显示在这里。",
+                    records = records,
                     onBack = { navController.popBackStack() }
-                )
+                ) { record ->
+                    RecognitionRecordCard(record)
+                }
             }
             composable(Routes.GAME_HISTORY) {
+                val viewModel: GameHistoryViewModel = viewModel()
+                val records by viewModel.records.collectAsStateWithLifecycle()
                 RecordsScreen(
                     title = "游戏记录",
                     iconRes = R.drawable.ic_nav_game,
                     emptyTitle = "暂无游戏记录",
                     emptyHint = "完成一局垃圾分类游戏后，成绩会显示在这里。",
+                    records = records,
                     onBack = { navController.popBackStack() }
-                )
+                ) { record ->
+                    GameRecordCard(record)
+                }
             }
         }
     }

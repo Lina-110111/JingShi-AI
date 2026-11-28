@@ -1,20 +1,24 @@
 package cn.edu.sicnu.cs.hln.jingshiai.ui.screens
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import cn.edu.sicnu.cs.hln.jingshiai.data.local.JingShiDatabase
+import cn.edu.sicnu.cs.hln.jingshiai.data.model.Stats
+import cn.edu.sicnu.cs.hln.jingshiai.data.repository.JingShiRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 
-// 首页与“我的”共用的统计数据
-data class StatsUiState(
-    val recognitionCount: Int = 0,
-    val gameCount: Int = 0
-)
+// 首页统计：直接观察 Room 中的真实数据
+class StatsViewModel(application: Application) : AndroidViewModel(application) {
 
-class StatsViewModel : ViewModel() {
+    private val repository = JingShiRepository(JingShiDatabase.getInstance(application))
 
-    // 尚未接入 Room，先提供明确的空状态，不虚构统计数字；
-    // 接入数据库后，把这里替换为 Repository 暴露的 Flow 即可。
-    private val _uiState = MutableStateFlow(StatsUiState())
-    val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
+    val stats: StateFlow<Stats> = repository.observeStats()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Stats()
+        )
 }

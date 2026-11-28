@@ -36,6 +36,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import cn.edu.sicnu.cs.hln.jingshiai.R
+import cn.edu.sicnu.cs.hln.jingshiai.data.local.entity.UserEntity
+import cn.edu.sicnu.cs.hln.jingshiai.data.model.Stats
 import cn.edu.sicnu.cs.hln.jingshiai.ui.components.SectionTitle
 import cn.edu.sicnu.cs.hln.jingshiai.ui.components.StatsRow
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.BorderColor
@@ -52,7 +54,8 @@ private enum class MineDialog { Settings, About, Feedback }
 
 @Composable
 fun MineScreen(
-    stats: StatsUiState,
+    stats: Stats,
+    user: UserEntity?,
     onOpenRecognitionHistory: () -> Unit,
     onOpenGameHistory: () -> Unit,
     modifier: Modifier = Modifier
@@ -69,7 +72,7 @@ fun MineScreen(
             .padding(horizontal = 20.dp)
             .padding(top = 12.dp, bottom = 24.dp)
     ) {
-        ProfileCard()
+        ProfileCard(user)
 
         Spacer(Modifier.height(26.dp))
         SectionTitle("环保数据")
@@ -188,7 +191,7 @@ fun MineScreen(
 
 // 用户信息区域
 @Composable
-private fun ProfileCard() {
+private fun ProfileCard(user: UserEntity?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,13 +221,13 @@ private fun ProfileCard() {
                 .padding(start = 14.dp)
         ) {
             Text(
-                text = "净识用户",
+                text = user?.nickname ?: "净识用户",
                 style = MaterialTheme.typography.titleLarge,
                 color = TextPrimary
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "让垃圾分类更简单",
+                text = user?.bio ?: "让垃圾分类更简单",
                 style = MaterialTheme.typography.labelSmall,
                 color = TextHint
             )
