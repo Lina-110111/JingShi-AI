@@ -1,6 +1,5 @@
 package cn.edu.sicnu.cs.hln.jingshiai.navigation
 
-import android.content.Intent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -11,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,7 +22,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import cn.edu.sicnu.cs.hln.jingshiai.R
-import cn.edu.sicnu.cs.hln.jingshiai.RecognitionActivity
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.GameHistoryViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.GameRecordCard
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.HomeScreen
@@ -34,6 +31,7 @@ import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.MineViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.PlaceholderScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecognitionHistoryViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecognitionRecordCard
+import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecognitionScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.RecordsScreen
 import cn.edu.sicnu.cs.hln.jingshiai.ui.screens.StatsViewModel
 import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.CardWhite
@@ -45,17 +43,11 @@ import cn.edu.sicnu.cs.hln.jingshiai.ui.theme.TextHint
 @Composable
 fun JingShiApp() {
     val navController = rememberNavController()
-    val context = LocalContext.current
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
     // 只在四个主页面显示底部导航
     val showBottomBar = BottomTab.entries.any { it.route == currentRoute }
-
-    // 识别页尚未迁移到 Compose，仍打开原有 Activity，保证功能与界面不变
-    val openRecognitionPage: () -> Unit = {
-        context.startActivity(Intent(context, RecognitionActivity::class.java))
-    }
 
     Scaffold(
         containerColor = PageBackground,
@@ -78,18 +70,13 @@ fun JingShiApp() {
                 val stats by viewModel.stats.collectAsStateWithLifecycle()
                 HomeScreen(
                     stats = stats,
-                    onStartRecognition = openRecognitionPage,
+                    onStartRecognition = { navController.navigateToTab(BottomTab.Recognition) },
                     onOpenGame = { navController.navigateToTab(BottomTab.Game) },
                     onOpenKnowledge = { navController.navigate(Routes.KNOWLEDGE) }
                 )
             }
             composable(Routes.RECOGNITION) {
-                PlaceholderScreen(
-                    title = "AI 智能识别",
-                    description = "识别页面正在迁移到 Compose，当前仍使用原有识别页面，功能与界面保持不变。",
-                    actionText = "打开识别页面",
-                    onAction = openRecognitionPage
-                )
+                RecognitionScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.GAME) {
                 PlaceholderScreen(
